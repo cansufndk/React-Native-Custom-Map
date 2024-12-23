@@ -7,7 +7,18 @@ const MapView = ({ latitude, longitude, zoom = 10, markers = [], apiKey }) => {
   const markersScript = markers
     .map(
       (marker) =>
-        `new google.maps.Marker({position: {lat: ${marker.lat}, lng: ${marker.lng}}, map: map, title: '${marker.title}' });`
+        `var marker = new google.maps.Marker({
+          position: {lat: ${marker.lat}, lng: ${marker.lng}},
+          map: map,
+          title: '${marker.title}',
+          draggable: true 
+        });
+
+
+        google.maps.event.addListener(marker, 'dragend', function(event) {
+          console.log('New position: ', event.latLng.lat(), event.latLng.lng());
+        });
+        `
     )
     .join('\n');
 
@@ -26,7 +37,7 @@ const MapView = ({ latitude, longitude, zoom = 10, markers = [], apiKey }) => {
               center: { lat: ${latitude}, lng: ${longitude} },
               zoom: ${zoom}
             });
-            ${markersScript}
+            ${markersScript} // Marker'ları buraya ekliyoruz
           }
         </script>
       </head>
@@ -59,11 +70,6 @@ MapView.propTypes = {
     })
   ),
   apiKey: PropTypes.string.isRequired,
-};
-
-MapView.defaultProps = {
-  zoom: 10,
-  markers: [],
 };
 
 const styles = StyleSheet.create({

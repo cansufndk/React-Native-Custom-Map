@@ -1,6 +1,6 @@
 {
   "name": "react-native-custom-map",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "main": "./src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,7 +16,15 @@
   ],
   "author":"Cansu Findik",
   "license": "ISC",
-  "description": "",
+  "description": "A custom map component for React Native and Expo projects using Google Maps via WebView.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cansufndk/react-native-custom-map.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cansufndk/react-native-custom-map/issues"
+  },
+  "homepage": "https://github.com/cansufndk/react-native-custom-map#readme",
   "dependencies": {
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
