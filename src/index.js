@@ -1,27 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import PropTypes from 'prop-types';
 
-const MapView = ({ latitude, longitude, zoom = 10, markers = [], apiKey }) => {
-  const markersScript = markers
-    .map(
-      (marker) =>
-        `var marker = new google.maps.Marker({
-          position: {lat: ${marker.lat}, lng: ${marker.lng}},
-          map: map,
-          title: '${marker.title}',
-          draggable: true 
-        });
-
-
-        google.maps.event.addListener(marker, 'dragend', function(event) {
-          console.log('New position: ', event.latLng.lat(), event.latLng.lng());
-        });
-        `
-    )
-    .join('\n');
-
+const MapView = ({ latitude, longitude, zoom = 10, markers = [], apiKey, onMarkerDragEnd }) => {
   const googleMapsHTML = `
     <!DOCTYPE html>
     <html>
@@ -32,12 +14,40 @@ const MapView = ({ latitude, longitude, zoom = 10, markers = [], apiKey }) => {
         </style>
         <script src="https://maps.googleapis.com/maps/api/js?key=${apiKey}"></script>
         <script>
+          let map;
+
           function initMap() {
-            var map = new google.maps.Map(document.getElementById('map'), {
+            map = new google.maps.Map(document.getElementById('map'), {
               center: { lat: ${latitude}, lng: ${longitude} },
               zoom: ${zoom}
             });
-            ${markersScript} // Marker'ları buraya ekliyoruz
+
+            ${markers
+              .map(
+                (marker) => `
+                  var marker = new google.maps.Marker({
+                    position: {lat: ${marker.lat}, lng: ${marker.lng}},
+                    map: map,
+                    title: '${marker.title}',
+                    draggable: true
+                  });
+
+                  google.maps.event.addListener(marker, 'dragend', function(event) {
+                    window.ReactNativeWebView.postMessage(JSON.stringify({
+                      title: marker.title,
+                      lat: event.latLng.lat(),
+                      lng: event.latLng.lng()
+                    }));
+                  });
+                `
+              )
+              .join('')}
+          }
+
+          function updateMapCenter(lat, lng) {
+            if (map) {
+              map.setCenter({ lat, lng });
+            }
           }
         </script>
       </head>
@@ -47,12 +57,28 @@ const MapView = ({ latitude, longitude, zoom = 10, markers = [], apiKey }) => {
     </html>
   `;
 
+  const webViewRef = React.useRef(null);
+
+  useEffect(() => {
+    if (webViewRef.current) {
+      const script = `updateMapCenter(${latitude}, ${longitude});`;
+      webViewRef.current.injectJavaScript(script);
+    }
+  }, [latitude, longitude]);
+
   return (
     <View style={styles.container}>
       <WebView
+        ref={webViewRef}
         originWhitelist={['*']}
         source={{ html: googleMapsHTML }}
         style={styles.map}
+        onMessage={(event) => {
+          const data = JSON.parse(event.nativeEvent.data);
+          if (onMarkerDragEnd) {
+            onMarkerDragEnd(data);
+          }
+        }}
       />
     </View>
   );
@@ -70,6 +96,7 @@ MapView.propTypes = {
     })
   ),
   apiKey: PropTypes.string.isRequired,
+  onMarkerDragEnd: PropTypes.func,
 };
 
 const styles = StyleSheet.create({
