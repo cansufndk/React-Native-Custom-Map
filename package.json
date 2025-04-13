@@ -1,6 +1,6 @@
 {
   "name": "react-native-custom-map",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "main": "./src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,7 @@
     "google-maps",
     "openstreetmap"
   ],
-  "author":"Cansu Findik",
+  "author": "Cansu Findik",
   "license": "ISC",
   "description": "A custom map component for React Native and Expo projects using Google Maps via WebView.",
   "repository": {
